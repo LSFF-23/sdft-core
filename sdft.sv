@@ -1,5 +1,5 @@
-// sliding dft, out^2 = re^2 + im^2
-// squared comparison to avoid sqrt calculation
+// sliding dft, clean formula + original references at https://www.comm.utoronto.ca/~dimitris/ece431/slidingdft.pdf
+// pipelined operations to keep fmax high
 module sdft (
     clk,
     rstn,
@@ -15,7 +15,7 @@ input logic clk;
 input logic rstn;
 input logic sample_en;
 input logic [ADC_DW-1:0] sample;
-output logic [MAG_DW-1:0] out;
+output logic [ACC_DW-1:0] out;
 output logic valid;
 
 logic signed [ADC_DW-1:0] COS_TABLE [BUFFER_SIZE];
@@ -34,6 +34,19 @@ logic signed [ACC_DW+ADC_DW-1:0] re_cos, im_sin, reshift_reg, imshift_reg;
 logic signed [MAG_DW-1:0] re2, im2;
 msdft_states state, next_state;
 
+wire sqrt_en = state == SDFT_SQRT;
+wire signed [MAG_DW-1:0] mag2 = re2 + im2;
+wire [ACC_DW-1:0] Q_out;
+wire sqrt_valid;
+nnr_sqrt #(.IN_SIZE(MAG_DW)) u_nnr_sqrt (
+    .clk(clk),
+    .rstn(rstn),
+    .sample_en(sqrt_en),
+    .D_in(mag2),
+    .Q_out(Q_out),
+    .valid(sqrt_valid)
+);
+
 always_ff @(posedge clk)
     if (!rstn)
         state <= SDFT_IDLE;
@@ -47,8 +60,10 @@ always_comb begin
         SDFT_DELTA: next_state = SDFT_TRIG;
         SDFT_TRIG: next_state = SDFT_SHIFT;
         SDFT_SHIFT: next_state = SDFT_UPDATE;
-        SDFT_UPDATE: next_state = SDFT_MAGNITUDE;
-        SDFT_MAGNITUDE: next_state = SDFT_DONE;
+        SDFT_UPDATE: next_state = SDFT_SQUARE;
+        SDFT_SQUARE: next_state = SDFT_SQRT;
+        SDFT_SQRT: next_state = SDFT_MAGNITUDE;
+        SDFT_MAGNITUDE: if (sqrt_valid) next_state = SDFT_DONE;
         SDFT_DONE: next_state = SDFT_IDLE;
         default: next_state = SDFT_IDLE;
     endcase
@@ -113,14 +128,14 @@ always_ff @(posedge clk)
                 re_acc <= reacc_new;
                 im_acc <= imacc_new;
             end
-            SDFT_MAGNITUDE: begin
+            SDFT_SQUARE: begin
                 re2 <= re_sqr;
                 im2 <= im_sqr;
             end
             SDFT_DONE: begin
                 buffer[index] <= cur_sample;
                 index <= new_index;
-                out <= re2 + im2;
+                out <= Q_out;
                 valid <= 1'b1;
             end
         endcase
