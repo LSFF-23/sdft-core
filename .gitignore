@@ -9,7 +9,6 @@ work/
 *.wlf
 *.cr.mti
 *.vcd
-transcript
 *.vstf
 wlft*
 
