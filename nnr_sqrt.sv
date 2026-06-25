@@ -1,4 +1,5 @@
 // fsm implementation: new non-restoring square-root (Li & Chu, 1996)
+// no remainder correction
 module nnr_sqrt #
 (
     parameter int IN_SIZE = 8
@@ -49,24 +50,24 @@ end
 
 wire signed [OUT_SIZE+3:0] Rs2 = $signed(R) <<< 2;
 wire [OUT_SIZE+1:0] common_R = Rs2[OUT_SIZE+1:0] | D[i + i + 1 -: 2];
-wire [OUT_SIZE+1:0] Q01 = (Q << 2) | 1;
-wire [OUT_SIZE+1:0] Q11 = (Q << 2) | 3;
+wire [OUT_SIZE+1:0] Q01 = (Q << 2) | 1'b1;
+wire [OUT_SIZE+1:0] Q11 = (Q << 2) | 2'b11;
 wire [OUT_SIZE+1:0] pos_R = $unsigned($signed(common_R) - $signed(Q01));
 wire [OUT_SIZE+1:0] neg_R = $unsigned($signed(common_R) + $signed(Q11));
-wire [OUT_SIZE-1:0] neg_Q = (Q << 1) | 0;
-wire [OUT_SIZE-1:0] pos_Q = (Q << 1) | 1;
+wire [OUT_SIZE-1:0] neg_Q = (Q << 1) | 1'b0;
+wire [OUT_SIZE-1:0] pos_Q = (Q << 1) | 1'b1;
 
 always_ff @(posedge clk)
     if (!rstn) begin
         D <= '0;
         Q <= '0;
         R <= '0;
-        i <= OUT_SIZE - 1;
+        i <= I_SIZE'(OUT_SIZE - 1);
     end else begin
         case (state)
             IDLE: begin
                 if (sample_en) begin
-                    i <= OUT_SIZE - 1;
+                    i <= I_SIZE'(OUT_SIZE - 1);
                     D <= D_in;
                     Q <= '0;
                     R <= '0;
@@ -82,8 +83,8 @@ always_ff @(posedge clk)
                     Q <= pos_R[OUT_SIZE+1] ? neg_Q : pos_Q;
                 end
             end
-            DONE: begin // remainder ignored
-                i <= '0;
+            DONE: begin
+                i <= I_SIZE'(OUT_SIZE - 1);
             end
         endcase
     end
