@@ -21,8 +21,8 @@ output logic valid;
 logic signed [ADC_DW-1:0] COS_TABLE [BUFFER_SIZE];
 logic signed [ADC_DW-1:0] SIN_TABLE [BUFFER_SIZE];
 initial begin
-    $readmemh("rom_cos.hex", COS_TABLE);
-    $readmemh("rom_sin.hex", SIN_TABLE);
+    $readmemh(COS_PATH, COS_TABLE);
+    $readmemh(SIN_PATH, SIN_TABLE);
 end
 
 logic signed [ADC_DW-1:0] buffer [BUFFER_SIZE] = '{default: '0};
@@ -86,7 +86,7 @@ wire signed [ACC_DW-1:0] imacc_new = im_acc + $signed(imshift_reg[ACC_DW-1:0]);
 wire signed [MAG_DW-1:0] re_sqr = re_acc * re_acc;
 wire signed [MAG_DW-1:0] im_sqr = im_acc * im_acc;
 
-wire [INDEX_SIZE-1:0] new_index = (index == 6'(BUFFER_SIZE - 1)) ? 6'b0 : index + 6'b1;
+wire [INDEX_SIZE-1:0] new_index = (index == INDEX_SIZE'(BUFFER_SIZE - 1)) ? INDEX_SIZE'(0) : index + 1'b1;
 
 always_ff @(posedge clk)
     if (!rstn) begin
