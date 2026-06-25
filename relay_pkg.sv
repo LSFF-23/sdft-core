@@ -7,6 +7,8 @@ localparam int ADC_DW = 16;
 localparam int ADC_OFFSET = 2**(ADC_DW-1);
 localparam int ACC_DW = 24;
 localparam int MAG_DW = 2*ACC_DW;
+localparam string COS_PATH = "./resources/rom_cos.hex";
+localparam string SIN_PATH = "./resources/rom_sin.hex";
 
 localparam int FUNDAMENTAL_F = 60; // in Hz
 localparam int SAMPLING_F = FUNDAMENTAL_F * BUFFER_SIZE;
