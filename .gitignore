@@ -1,33 +1,33 @@
 # ivlog files
 *.out
-.dvt
+*.dvt
 *.log
 
 # questa files
-*.mpf
 work/
+*.mpf
 *.wlf
 *.cr.mti
 *.vcd
 *.vstf
-wlft*
 
 # quartus files
 db/
+greybox_tmp/
+hps/
 incremental_db/
 output_files/
 simulation/
+altera_mf.v
 *.qpf
 *.qsf
 *.bak
 *.qws
 *.txt
-greybox_tmp/
-
-# document files
-*.pdf
-*.png
 
 # unwanted tb_ files
 tb_*.sv
 tb_*.v
+
+# other
+.vscode/
