@@ -7,8 +7,8 @@ localparam int ADC_DW = 16;
 localparam int ADC_OFFSET = 2**(ADC_DW-1);
 localparam int ACC_DW = 24;
 localparam int MAG_DW = 2*ACC_DW;
-localparam string COS_PATH = "./resources/rom_cos.hex";
-localparam string SIN_PATH = "./resources/rom_sin.hex";
+localparam COS_PATH = "./resources/rom_cos.hex";
+localparam SIN_PATH = "./resources/rom_sin.hex";
 
 localparam int FUNDAMENTAL_F = 60; // in Hz
 localparam int SAMPLING_F = FUNDAMENTAL_F * BUFFER_SIZE;
@@ -22,6 +22,9 @@ localparam int A59_HYSTERESIS = int'(A59_PICKUP * 0.02);
 localparam int MAIN_CLK = 50_000_000;
 localparam int DIVIDER_FACTOR = MAIN_CLK / SAMPLING_F;
 localparam int DIVIDER_SIZE = $clog2(DIVIDER_FACTOR);
+
+localparam int FIFO_DEPTH = 1024;
+localparam int FIFO_INDEX = $clog2(FIFO_DEPTH);
 
 typedef enum logic [3:0] {
     SDFT_IDLE,
