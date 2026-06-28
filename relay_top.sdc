@@ -1,5 +1,5 @@
-create_clock -name main_clk -period 20.000 [get_ports {clk}]
-create_clock -name hps_clk  -period 10.000 [get_ports {clk_hps}]
+create_clock -name main_clk -period 5.000 [get_ports {clk}]
+create_clock -name hps_clk  -period 5.000 [get_ports {clk_hps}]
 
 set_clock_groups -asynchronous -group {main_clk} -group {hps_clk}
 
