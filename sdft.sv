@@ -28,6 +28,7 @@ end
 logic signed [ADC_DW-1:0] buffer [BUFFER_SIZE] = '{default: '0};
 logic [INDEX_SIZE-1:0] index;
 logic signed [ADC_DW-1:0] cur_sample, old_sample;
+logic signed [ADC_DW-1:0] cos_reg, sin_reg;
 logic signed [ADC_DW:0] delta_reg;
 logic signed [ACC_DW-1:0] re_acc, im_acc;
 logic signed [ACC_DW+ADC_DW-1:0] re_cos, im_sin, reshift_reg, imshift_reg;
@@ -73,8 +74,8 @@ wire signed [ADC_DW-1:0] sample_offset = $signed(sample) - $signed(ADC_DW'(ADC_O
 
 wire signed [ADC_DW:0] delta_comb = cur_sample - old_sample;
 
-wire signed [ACC_DW+ADC_DW-1:0] delta_cos = delta_reg * COS_TABLE[index];
-wire signed [ACC_DW+ADC_DW-1:0] delta_sin = delta_reg * SIN_TABLE[index];
+wire signed [ACC_DW+ADC_DW-1:0] delta_cos = delta_reg * cos_reg;
+wire signed [ACC_DW+ADC_DW-1:0] delta_sin = delta_reg * sin_reg;
 
 wire signed [ACC_DW+ADC_DW-1:0] round_const = $signed((ACC_DW + ADC_DW)'(1) << (ADC_DW - 2));
 wire signed [ACC_DW+ADC_DW-1:0] re_shift = (re_cos + round_const) >>> (ADC_DW - 1);
@@ -93,6 +94,8 @@ always_ff @(posedge clk)
         index <= '0;
         cur_sample <= '0;
         old_sample <= '0;
+        cos_reg <= '0;
+        sin_reg <= '0;
         delta_reg <= '0;
         re_acc <= '0;
         im_acc <= '0;
@@ -114,6 +117,8 @@ always_ff @(posedge clk)
                 end
             end
             SDFT_DELTA: begin
+                cos_reg <= COS_TABLE[index];
+                sin_reg <= SIN_TABLE[index];
                 delta_reg <= delta_comb;
             end
             SDFT_TRIG: begin
